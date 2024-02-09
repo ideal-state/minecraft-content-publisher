@@ -25,6 +25,7 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import team.idealstate.minecraft.contentpublisher.spigot.bukkit.listener.ContentSubscribeListener;
 import team.idealstate.minecraft.contentpublisher.spigot.bukkit.listener.SubscriberAwareListener;
 
 import java.util.concurrent.locks.Lock;
@@ -64,6 +65,7 @@ public final class ContentPublisher extends JavaPlugin {
 
             PluginManager pluginManager = Bukkit.getPluginManager();
             pluginManager.registerEvents(new SubscriberAwareListener(this), this);
+            pluginManager.registerEvents(new ContentSubscribeListener(this), this);
         } finally {
             lock.unlock();
         }
