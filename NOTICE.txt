@@ -1,0 +1,37 @@
+************************************************************************
+
+minecraft-content-publisher
+版权所有 2024 ideal-state
+(https://github.com/ideal-state/minecraft-content-publisher)
+
+************************************************************************
+
+本项目可能包含具有单独版权声明和许可条款的依赖项。
+
+您对这些依赖项的源代码的使用将受以下许可条款和条件的约束。
+
+这些依赖项的所包含的版权声明和许可条款文件存放在目录 LICENSES/依赖项的项目名称/ 下。
+
+========================================================================
+
+hyper-rpc
+(https://github.com/ideal-state/hyper-rpc)
+
+========================================================================
+
+jackson-dataformat-text:
+    jackson-dataformat-yaml
+(https://github.com/FasterXML/jackson-dataformat-text)
+
+========================================================================
+
+Bungeecord:
+    Bungeecord-api
+(https://github.com/SpigotMC/BungeeCord)
+
+========================================================================
+
+Spigot-API
+(https://github.com/SpigotMC/Spigot-API)
+
+************************************************************************

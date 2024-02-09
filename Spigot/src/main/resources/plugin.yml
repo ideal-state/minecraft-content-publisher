@@ -1,0 +1,8 @@
+name: ${name}
+version: ${version}
+main: team.idealstate.minecraft.contentpublisher.spigot.ContentPublisher
+author: ketikai
+load: STARTUP
+commands:
+  ${name}:
+    description: 主命令

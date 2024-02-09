@@ -1,0 +1,4 @@
+name: ${name}
+version: ${version}
+main: team.idealstate.minecraft.contentpublisher.bungeecord.ContentPublisher
+author: ketikai

@@ -1,0 +1,47 @@
+************************************************************************
+
+hyper-rpc
+版权所有 2024 ideal-state
+(https://github.com/ideal-state/hyper-rpc)
+
+************************************************************************
+
+本项目可能包含具有单独版权声明和许可条款的依赖项。
+
+您对这些依赖项的源代码的使用将受以下许可条款和条件的约束。
+
+这些依赖项的所包含的版权声明和许可条款文件存放在目录 LICENSES/依赖项的项目名称/ 下。
+
+========================================================================
+
+logging-log4j2:
+    log4j-core
+(https://github.com/apache/logging-log4j2)
+
+========================================================================
+
+asm:
+    asm
+(https://gitlab.ow2.org/asm/asm)
+
+========================================================================
+
+jackson-databind
+(https://github.com/FasterXML/jackson-databind)
+
+========================================================================
+
+jackson-modules-java8:
+    jackson-module-parameter-names
+    jackson-datatype-jsr310
+    jackson-datatype-jdk8
+(https://github.com/FasterXML/jackson-modules-java8)
+
+========================================================================
+
+netty:
+    netty-codec
+    netty-handler
+(https://github.com/netty/netty)
+
+************************************************************************
