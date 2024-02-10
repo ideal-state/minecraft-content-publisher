@@ -22,7 +22,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.jetbrains.annotations.NotNull;
-import team.idealstate.hyper.rpc.api.AssertUtils;
+import team.idealstate.hyper.common.AssertUtils;
 
 import java.util.Arrays;
 import java.util.List;

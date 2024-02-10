@@ -22,7 +22,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
-import team.idealstate.hyper.rpc.api.AssertUtils;
+import team.idealstate.hyper.common.AssertUtils;
 import team.idealstate.minecraft.contentpublisher.spigot.ContentPublisher;
 import team.idealstate.minecraft.contentpublisher.spigot.bukkit.event.ContentSubscribeEvent;
 
@@ -48,5 +48,6 @@ public class ContentSubscribeListener implements Listener {
     public void on(ContentSubscribeEvent event) {
         byte[] content = contentPublisher.subscribe(event.getId(), event.getPath());
         event.setContent(content);
+        event.setCancelled(true);
     }
 }

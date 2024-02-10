@@ -19,7 +19,7 @@
 package team.idealstate.minecraft.contentpublisher.common;
 
 import org.jetbrains.annotations.NotNull;
-import team.idealstate.hyper.rpc.api.AssertUtils;
+import team.idealstate.hyper.common.AssertUtils;
 
 import java.io.File;
 import java.io.IOException;

@@ -18,11 +18,10 @@
 
 package team.idealstate.minecraft.contentpublisher.spigot.bukkit.event;
 
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import team.idealstate.hyper.rpc.api.AssertUtils;
+import team.idealstate.hyper.common.AssertUtils;
 
 /**
  * <p>ContentSubscribeEvent</p>
@@ -37,7 +36,7 @@ import team.idealstate.hyper.rpc.api.AssertUtils;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class ContentSubscribeEvent extends Event {
+public class ContentSubscribeEvent extends CancellableEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final String id;

@@ -20,7 +20,7 @@ package team.idealstate.minecraft.contentpublisher.spigot.service;
 
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
-import team.idealstate.hyper.rpc.api.AssertUtils;
+import team.idealstate.hyper.common.AssertUtils;
 import team.idealstate.minecraft.contentpublisher.common.service.ContentPublishService;
 import team.idealstate.minecraft.contentpublisher.spigot.bukkit.event.ContentPublishEvent;
 

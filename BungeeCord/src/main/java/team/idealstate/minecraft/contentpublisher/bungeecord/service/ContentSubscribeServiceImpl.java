@@ -19,7 +19,7 @@
 package team.idealstate.minecraft.contentpublisher.bungeecord.service;
 
 import org.jetbrains.annotations.NotNull;
-import team.idealstate.hyper.rpc.api.AssertUtils;
+import team.idealstate.hyper.common.AssertUtils;
 import team.idealstate.minecraft.contentpublisher.common.AssetUtils;
 import team.idealstate.minecraft.contentpublisher.common.service.ContentSubscribeService;
 

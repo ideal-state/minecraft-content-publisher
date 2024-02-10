@@ -23,7 +23,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.jetbrains.annotations.NotNull;
-import team.idealstate.hyper.rpc.api.AssertUtils;
+import team.idealstate.hyper.common.AssertUtils;
 import team.idealstate.minecraft.contentpublisher.spigot.ContentPublisher;
 import team.idealstate.minecraft.contentpublisher.spigot.api.SubscriberAware;
 

@@ -21,7 +21,7 @@ package team.idealstate.minecraft.contentpublisher.bungeecord;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
 import org.jetbrains.annotations.NotNull;
-import team.idealstate.hyper.rpc.api.AssertUtils;
+import team.idealstate.hyper.common.AssertUtils;
 
 /**
  * <p>ContentPublisher</p>
