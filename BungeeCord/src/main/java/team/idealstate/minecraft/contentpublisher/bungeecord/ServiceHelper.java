@@ -18,33 +18,14 @@
 
 package team.idealstate.minecraft.contentpublisher.bungeecord;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import team.idealstate.hyper.common.AssertUtils;
-import team.idealstate.hyper.common.JarUtils;
-import team.idealstate.hyper.common.RsaUtils;
-import team.idealstate.hyper.common.jackson.YamlUtils;
-import team.idealstate.hyper.rpc.api.future.Future;
-import team.idealstate.hyper.rpc.api.service.ServiceManager;
-import team.idealstate.hyper.rpc.api.service.Watchdog;
-import team.idealstate.hyper.rpc.impl.netty.ServerStarter;
-import team.idealstate.hyper.rpc.impl.service.StdServiceManager;
-import team.idealstate.minecraft.contentpublisher.common.AssetUtils;
-import team.idealstate.minecraft.contentpublisher.common.model.entity.Service;
+import team.idealstate.hyper.rpc.api.service.exception.UnregisteredServiceException;
+import team.idealstate.minecraft.contentpublisher.common.AbstractServiceHelper;
+import team.idealstate.minecraft.contentpublisher.common.StartupListener;
 import team.idealstate.minecraft.contentpublisher.common.service.ContentPublishService;
 import team.idealstate.minecraft.contentpublisher.common.service.ContentSubscribeService;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.security.Key;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * <p>ServiceHelper</p>
@@ -55,113 +36,23 @@ import java.util.concurrent.locks.ReentrantLock;
  * @version 1.0.0
  * @since 1.0.0
  */
-final class ServiceHelper {
+final class ServiceHelper extends AbstractServiceHelper {
 
     private static final Logger logger = LogManager.getLogger(ServiceHelper.class);
-    private final Lock lock = new ReentrantLock();
-    private volatile SocketAddress address;
-    private volatile int nThreads;
-    private volatile int timeout;
-    private volatile int maximumRetry;
-    private volatile Key key;
-    private volatile ClassLoader classLoader;
-    private volatile ServiceManager serviceManager;
-    private volatile Watchdog watchdog;
 
-    ServiceHelper(@NotNull ClassLoader classLoader) {
-        load(classLoader);
+    ServiceHelper(@NotNull ClassLoader classLoader, StartupListener startupListener) {
+        super(KeyType.PRIVATE, StarterType.SERVER, classLoader, startupListener);
     }
 
-    private void load(@NotNull ClassLoader classLoader) {
-        AssertUtils.notNull(classLoader, "无效的类加载器");
-        File file = JarUtils.copy(AssetUtils.asset("/service.yml"), AssetUtils.dataDirectory());
-        Service service;
-        try {
-            service = YamlUtils.toBean(file, Service.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        this.address = new InetSocketAddress(service.getHost(), service.getPort());
-        Integer threads = service.getThreads();
-        this.nThreads = threads <= 0 ? Runtime.getRuntime().availableProcessors() : threads;
-        this.timeout = Math.max(Future.DEFAULT_TIMEOUT, service.getTimeout());
-        this.maximumRetry = Math.max(10, service.getTimeout());
-        file = JarUtils.copy(AssetUtils.asset("/private"), AssetUtils.dataDirectory());
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            byte[] data = new byte[fileInputStream.available()];
-            //noinspection ResultOfMethodCallIgnored
-            fileInputStream.read(data);
-            this.key = RsaUtils.generatePrivateKey(RsaUtils.importKey(data));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        this.classLoader = classLoader;
-    }
-
-    public void reload(@NotNull ClassLoader classLoader) {
+    public void publish(@NotNull String id, @NotNull String path) throws UnregisteredServiceException {
         lock.lock();
         try {
-            logger.info("开始载入配置");
-            load(classLoader);
-            logger.info("已载入配置");
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    public void startup() {
-        lock.lock();
-        try {
-            if (serviceManager == null && watchdog == null) {
-                this.serviceManager = new StdServiceManager(Executors.newFixedThreadPool(nThreads));
-                this.serviceManager.setClassLoader(classLoader);
-                ServerStarter starter = new ServerStarter(address, key, serviceManager, nThreads);
-                ((StdServiceManager) serviceManager).setServiceInvoker(starter);
-                ((StdServiceManager) serviceManager).setTimeout(timeout);
-                serviceManager.register(ContentPublishService.class);
-                serviceManager.register(ContentSubscribeService.class);
-                this.watchdog = new Watchdog(starter, maximumRetry);
-                watchdog.startup();
+            if (isActive()) {
+                ContentSubscribeService contentSubscribeService = serviceManager.get(ContentSubscribeService.class);
+                byte[] content = contentSubscribeService.subscribe(id, path);
+                ContentPublishService contentPublishService = serviceManager.get(ContentPublishService.class);
+                contentPublishService.publish(id, path, content);
             }
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    public void shutdown() {
-        lock.lock();
-        try {
-            if (serviceManager != null && watchdog != null) {
-                serviceManager.shutdown();
-                this.serviceManager = null;
-                watchdog.shutdown();
-                this.watchdog = null;
-            }
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    public void restart() {
-        lock.lock();
-        try {
-            shutdown();
-            startup();
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    public void publish(@NotNull String id, @NotNull String path) {
-        lock.lock();
-        try {
-            startup();
-            ContentSubscribeService contentSubscribeService = serviceManager.get(ContentSubscribeService.class);
-            byte[] content = contentSubscribeService.subscribe(id, path);
-            ContentPublishService contentPublishService = serviceManager.get(ContentPublishService.class);
-            contentPublishService.publish(id, path, content);
-        } catch (Throwable e) {
-            logger.catching(e);
         } finally {
             lock.unlock();
         }

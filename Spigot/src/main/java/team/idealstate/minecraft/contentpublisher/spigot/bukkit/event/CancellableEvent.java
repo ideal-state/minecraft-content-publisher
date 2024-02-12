@@ -49,6 +49,8 @@ public abstract class CancellableEvent extends Event implements Cancellable {
 
     @Override
     public void setCancelled(boolean cancel) {
-        this.cancelled = cancel;
+        if (!isCancelled()) {
+            this.cancelled = cancel;
+        }
     }
 }

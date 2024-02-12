@@ -46,8 +46,10 @@ public class ContentSubscribeListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void on(ContentSubscribeEvent event) {
-        byte[] content = contentPublisher.subscribe(event.getId(), event.getPath());
-        event.setContent(content);
         event.setCancelled(true);
+        byte[] content = contentPublisher.subscribe(event.getId(), event.getPath());
+        if (content != null) {
+            event.setContent(content);
+        }
     }
 }

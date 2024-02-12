@@ -25,6 +25,10 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import team.idealstate.hyper.rpc.api.service.exception.UnregisteredServiceException;
+import team.idealstate.minecraft.contentpublisher.common.StartupListener;
+import team.idealstate.minecraft.contentpublisher.spigot.bukkit.event.ContentPublisherStartEvent;
 import team.idealstate.minecraft.contentpublisher.spigot.bukkit.listener.ContentSubscribeListener;
 import team.idealstate.minecraft.contentpublisher.spigot.bukkit.listener.SubscriberAwareListener;
 
@@ -45,15 +49,27 @@ public final class ContentPublisher extends JavaPlugin {
     private final Lock lock = new ReentrantLock();
     private volatile ServiceHelper serviceHelper = null;
     private volatile ContentPublisherCommand contentPublisherCommand = null;
-
     @Override
     public void onEnable() {
         lock.lock();
         try {
             if (serviceHelper == null) {
-                this.serviceHelper = new ServiceHelper(getClassLoader());
+                this.serviceHelper = new ServiceHelper(getClassLoader(), new StartupListener() {
+                    @Override
+                    public void onSucceed() {
+                        Bukkit.getPluginManager().callEvent(new ContentPublisherStartEvent());
+                    }
+
+                    @Override
+                    public void onFail() {
+                        logger.error("服务启动失败，即将关闭服务器");
+                        Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage("服务启动失败，即将关闭服务器"));
+                        Bukkit.shutdown();
+                    }
+                });
             }
             serviceHelper.startup();
+
             if (contentPublisherCommand == null) {
                 this.contentPublisherCommand = new ContentPublisherCommand(this);
             }
@@ -82,8 +98,6 @@ public final class ContentPublisher extends JavaPlugin {
             }
             if (serviceHelper != null) {
                 serviceHelper.shutdown();
-            } else {
-                throw new IllegalStateException("服务不可用");
             }
         } finally {
             lock.unlock();
@@ -116,7 +130,7 @@ public final class ContentPublisher extends JavaPlugin {
         }
     }
 
-    public byte @NotNull [] subscribe(@NotNull String id, @NotNull String path) {
+    public byte @Nullable [] subscribe(@NotNull String id, @NotNull String path) {
         lock.lock();
         try {
             if (serviceHelper != null) {
@@ -124,8 +138,11 @@ public final class ContentPublisher extends JavaPlugin {
             } else {
                 throw new IllegalStateException("服务不可用");
             }
+        } catch (UnregisteredServiceException e) {
+            logger.catching(e);
         } finally {
             lock.unlock();
         }
+        return null;
     }
 }

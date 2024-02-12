@@ -34,7 +34,7 @@ subprojects {
                 url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
             }
             maven {
-                name = "sonatype"
+                name = "sonatype-public"
                 url = uri("https://oss.sonatype.org/content/groups/public/")
             }
             mavenCentral()

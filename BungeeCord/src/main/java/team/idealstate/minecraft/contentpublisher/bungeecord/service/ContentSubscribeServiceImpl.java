@@ -43,7 +43,7 @@ public class ContentSubscribeServiceImpl implements ContentSubscribeService {
         AssertUtils.notBlank(id, "无效的内容标识");
         AssertUtils.notBlank(path, "无效的内容路径");
         try {
-            return Files.readAllBytes(new File(AssetUtils.dataDirectory(), id + "/" + path).toPath());
+            return Files.readAllBytes(new File(AssetUtils.dataDirectory(getClass()), id + "/" + path).toPath());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

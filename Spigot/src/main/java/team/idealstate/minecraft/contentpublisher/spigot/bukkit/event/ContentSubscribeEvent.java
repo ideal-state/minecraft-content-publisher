@@ -41,7 +41,7 @@ public class ContentSubscribeEvent extends CancellableEvent {
 
     private final String id;
     private final String path;
-    private byte[] content;
+    private volatile byte[] content = null;
 
     public ContentSubscribeEvent(@NotNull String id, @NotNull String path) {
         super(false);

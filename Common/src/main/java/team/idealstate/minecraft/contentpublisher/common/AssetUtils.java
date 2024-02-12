@@ -46,21 +46,11 @@ public abstract class AssetUtils {
     private static final Map<Class<?>, File> FILE_CACHE = new HashMap<>(16, 0.6F);
 
     @NotNull
-    public static String asset(@NotNull String assetName) {
-        return asset(AssetUtils.class, assetName);
-    }
-
-    @NotNull
     public static String asset(@NotNull Class<?> sourceClass, @NotNull String assetName) {
         AssertUtils.notNull(sourceClass, "无效的来源类型");
         AssertUtils.notBlank(assetName, "无效的资源名称");
         String name = getName(sourceClass);
         return "/assets/" + name + assetName;
-    }
-
-    @NotNull
-    public static File dataDirectory() {
-        return dataDirectory(AssetUtils.class);
     }
 
     @NotNull

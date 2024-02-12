@@ -19,6 +19,7 @@
 package team.idealstate.minecraft.contentpublisher.spigot.api;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * <p>Subscriber</p>
@@ -31,5 +32,5 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface Subscriber {
 
-    byte @NotNull [] subscribe(@NotNull String id, @NotNull String path);
+    byte @Nullable [] subscribe(@NotNull String id, @NotNull String path);
 }
