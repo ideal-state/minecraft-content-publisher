@@ -65,6 +65,7 @@ tasks.shadowJar {
                 "Authors" to authors,
                 "Updated" to DateFormatUtils.format(Date(), "yyyy-MM-dd HH:mm:ssZ"),
                 "Multi-Release" to true,
+                "Main-Class" to "team.idealstate.hyper.rpc.impl.RsaKeyPairGenerator",
         ))
     }
 }
