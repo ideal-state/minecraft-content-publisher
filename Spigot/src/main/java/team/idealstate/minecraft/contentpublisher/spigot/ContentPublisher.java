@@ -26,12 +26,13 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import team.idealstate.hyper.rpc.api.service.WatchdogListener;
 import team.idealstate.hyper.rpc.api.service.exception.UnregisteredServiceException;
-import team.idealstate.minecraft.contentpublisher.common.StartupListener;
 import team.idealstate.minecraft.contentpublisher.spigot.bukkit.event.ContentPublisherStartEvent;
 import team.idealstate.minecraft.contentpublisher.spigot.bukkit.listener.ContentSubscribeListener;
 import team.idealstate.minecraft.contentpublisher.spigot.bukkit.listener.SubscriberAwareListener;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -49,39 +50,52 @@ public final class ContentPublisher extends JavaPlugin {
     private final Lock lock = new ReentrantLock();
     private volatile ServiceHelper serviceHelper = null;
     private volatile ContentPublisherCommand contentPublisherCommand = null;
+    private final WatchdogListener watchdogListener = new WatchdogListener() {
+        @Override
+        public void after(WatchdogListener.When when) {
+            if (WatchdogListener.When.STARTUP.equals(when)) {
+                Bukkit.getPluginManager().callEvent(new ContentPublisherStartEvent());
+            }
+        }
+
+        @Override
+        public void unnaturalDeath() {
+            logger.error("服务启动失败，即将关闭服务器");
+            Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage("服务启动失败，即将关闭服务器"));
+            Bukkit.shutdown();
+        }
+    };
+
     @Override
     public void onEnable() {
         lock.lock();
         try {
             if (serviceHelper == null) {
-                this.serviceHelper = new ServiceHelper(getClassLoader(), new StartupListener() {
-                    @Override
-                    public void onSucceed() {
-                        Bukkit.getPluginManager().callEvent(new ContentPublisherStartEvent());
-                    }
-
-                    @Override
-                    public void onFail() {
-                        logger.error("服务启动失败，即将关闭服务器");
-                        Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage("服务启动失败，即将关闭服务器"));
-                        Bukkit.shutdown();
-                    }
-                });
+                this.serviceHelper = new ServiceHelper(getClassLoader(), watchdogListener);
             }
             serviceHelper.startup();
-
-            if (contentPublisherCommand == null) {
-                this.contentPublisherCommand = new ContentPublisherCommand(this);
+            while (serviceHelper.isAlive()) {
+                if (serviceHelper.isActive()) {
+                    break;
+                }
+                TimeUnit.SECONDS.sleep(1L);
             }
-            PluginCommand command = getCommand("ContentPublisher-Spigot");
-            if (command != null) {
-                command.setExecutor(contentPublisherCommand);
-                command.setTabCompleter(contentPublisherCommand);
-            }
+            if (serviceHelper.isActive()) {
+                if (contentPublisherCommand == null) {
+                    this.contentPublisherCommand = new ContentPublisherCommand(this);
+                }
+                PluginCommand command = getCommand("ContentPublisher-Spigot");
+                if (command != null) {
+                    command.setExecutor(contentPublisherCommand);
+                    command.setTabCompleter(contentPublisherCommand);
+                }
 
-            PluginManager pluginManager = Bukkit.getPluginManager();
-            pluginManager.registerEvents(new SubscriberAwareListener(this), this);
-            pluginManager.registerEvents(new ContentSubscribeListener(this), this);
+                PluginManager pluginManager = Bukkit.getPluginManager();
+                pluginManager.registerEvents(new SubscriberAwareListener(this), this);
+                pluginManager.registerEvents(new ContentSubscribeListener(this), this);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         } finally {
             lock.unlock();
         }

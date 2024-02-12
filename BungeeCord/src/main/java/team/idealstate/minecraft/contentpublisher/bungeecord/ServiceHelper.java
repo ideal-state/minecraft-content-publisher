@@ -21,9 +21,9 @@ package team.idealstate.minecraft.contentpublisher.bungeecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import team.idealstate.hyper.rpc.api.service.WatchdogListener;
 import team.idealstate.hyper.rpc.api.service.exception.UnregisteredServiceException;
 import team.idealstate.minecraft.contentpublisher.common.AbstractServiceHelper;
-import team.idealstate.minecraft.contentpublisher.common.StartupListener;
 import team.idealstate.minecraft.contentpublisher.common.service.ContentPublishService;
 import team.idealstate.minecraft.contentpublisher.common.service.ContentSubscribeService;
 
@@ -40,8 +40,8 @@ final class ServiceHelper extends AbstractServiceHelper {
 
     private static final Logger logger = LogManager.getLogger(ServiceHelper.class);
 
-    ServiceHelper(@NotNull ClassLoader classLoader, StartupListener startupListener) {
-        super(KeyType.PRIVATE, StarterType.SERVER, classLoader, startupListener);
+    ServiceHelper(@NotNull ClassLoader classLoader, WatchdogListener watchdogListener) {
+        super(KeyType.PRIVATE, StarterType.SERVER, classLoader, watchdogListener);
     }
 
     public void publish(@NotNull String id, @NotNull String path) throws UnregisteredServiceException {

@@ -27,10 +27,7 @@ import team.idealstate.hyper.common.JarUtils;
 import team.idealstate.hyper.common.RsaUtils;
 import team.idealstate.hyper.common.jackson.YamlUtils;
 import team.idealstate.hyper.rpc.api.future.Future;
-import team.idealstate.hyper.rpc.api.service.ServiceInvoker;
-import team.idealstate.hyper.rpc.api.service.ServiceManager;
-import team.idealstate.hyper.rpc.api.service.ServiceStarter;
-import team.idealstate.hyper.rpc.api.service.Watchdog;
+import team.idealstate.hyper.rpc.api.service.*;
 import team.idealstate.hyper.rpc.impl.netty.ClientStarter;
 import team.idealstate.hyper.rpc.impl.netty.ServerStarter;
 import team.idealstate.hyper.rpc.impl.service.StdServiceManager;
@@ -45,7 +42,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.security.Key;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -61,7 +57,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class AbstractServiceHelper {
     private static final Logger logger = LogManager.getLogger(AbstractServiceHelper.class);
     protected final Lock lock = new ReentrantLock();
-    protected final StartupListener startupListener;
     private final KeyType keyType;
     private final StarterType starterType;
     protected volatile ServiceManager serviceManager;
@@ -72,14 +67,15 @@ public abstract class AbstractServiceHelper {
     private volatile Key key;
     private volatile ClassLoader classLoader;
     private volatile Watchdog watchdog;
+    protected final WatchdogListener watchdogListener;
 
-    protected AbstractServiceHelper(@NotNull KeyType keyType, @NotNull StarterType starterType, @NotNull ClassLoader classLoader, StartupListener startupListener) {
+    protected AbstractServiceHelper(@NotNull KeyType keyType, @NotNull StarterType starterType, @NotNull ClassLoader classLoader, WatchdogListener watchdogListener) {
         AssertUtils.notNull(keyType, "无效的密钥类型");
         AssertUtils.notNull(starterType, "无效的服务启动器类型");
         this.keyType = keyType;
         this.starterType = starterType;
+        this.watchdogListener = watchdogListener;
         load(classLoader);
-        this.startupListener = startupListener;
     }
 
     private void load(@NotNull ClassLoader classLoader) {
@@ -147,31 +143,8 @@ public abstract class AbstractServiceHelper {
                 ((StdServiceManager) serviceManager).setTimeout(timeout);
                 serviceManager.register(ContentPublishService.class);
                 serviceManager.register(ContentSubscribeService.class);
-                this.watchdog = new Watchdog(starter, maximumRetry);
+                this.watchdog = new Watchdog(starter, watchdogListener, maximumRetry);
                 watchdog.startup();
-                if (startupListener != null) {
-                    while (watchdog.isAlive()) {
-                        if (watchdog.isActive()) {
-                            break;
-                        }
-                        try {
-                            TimeUnit.SECONDS.sleep(1L);
-                        } catch (InterruptedException e) {
-                            logger.catching(e);
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                    if (watchdog.isAlive()) {
-                        if (watchdog.isActive()) {
-                            startupListener.onSucceed();
-                        } else {
-                            logger.warn("已退出等待服务启动完成的阻塞");
-                            logger.warn("这可能会导致一些问题（仅在即将关闭服务器前执行此操作才能保证服务正常运行）");
-                        }
-                    } else {
-                        startupListener.onFail();
-                    }
-                }
             }
         } finally {
             lock.unlock();

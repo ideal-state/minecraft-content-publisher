@@ -19,9 +19,9 @@
 package team.idealstate.minecraft.contentpublisher.spigot;
 
 import org.jetbrains.annotations.NotNull;
+import team.idealstate.hyper.rpc.api.service.WatchdogListener;
 import team.idealstate.hyper.rpc.api.service.exception.UnregisteredServiceException;
 import team.idealstate.minecraft.contentpublisher.common.AbstractServiceHelper;
-import team.idealstate.minecraft.contentpublisher.common.StartupListener;
 import team.idealstate.minecraft.contentpublisher.common.service.ContentSubscribeService;
 
 /**
@@ -35,8 +35,8 @@ import team.idealstate.minecraft.contentpublisher.common.service.ContentSubscrib
  */
 final class ServiceHelper extends AbstractServiceHelper {
 
-    ServiceHelper(@NotNull ClassLoader classLoader, StartupListener startupListener) {
-        super(KeyType.PUBLIC, StarterType.CLIENT, classLoader, startupListener);
+    ServiceHelper(@NotNull ClassLoader classLoader, WatchdogListener watchdogListener) {
+        super(KeyType.PUBLIC, StarterType.CLIENT, classLoader, watchdogListener);
     }
 
     public byte @NotNull [] subscribe(@NotNull String id, @NotNull String path) throws UnregisteredServiceException {

@@ -22,9 +22,9 @@ import net.md_5.bungee.api.plugin.Plugin;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import team.idealstate.hyper.rpc.api.service.WatchdogListener;
 import team.idealstate.hyper.rpc.api.service.exception.UnregisteredServiceException;
 import team.idealstate.minecraft.contentpublisher.bungeecord.event.ContentPublisherStartEvent;
-import team.idealstate.minecraft.contentpublisher.common.StartupListener;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -40,6 +40,20 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public final class ContentPublisher extends Plugin {
     private static final Logger logger = LogManager.getLogger(ContentPublisher.class);
+    private final WatchdogListener watchdogListener = new WatchdogListener() {
+        @Override
+        public void after(When when) {
+            if (When.STARTUP.equals(when)) {
+                getProxy().getPluginManager().callEvent(new ContentPublisherStartEvent());
+            }
+        }
+
+        @Override
+        public void unnaturalDeath() {
+            logger.error("服务启动失败，即将关闭服务器");
+            getProxy().stop("服务启动失败，即将关闭服务器");
+        }
+    };
     private final Lock lock = new ReentrantLock();
     private volatile ContentPublisherCommand contentPublisherCommand = null;
     private volatile ServiceHelper serviceHelper = null;
@@ -49,18 +63,7 @@ public final class ContentPublisher extends Plugin {
         lock.lock();
         try {
             if (serviceHelper == null) {
-                this.serviceHelper = new ServiceHelper(getClass().getClassLoader(), new StartupListener() {
-                    @Override
-                    public void onSucceed() {
-                        getProxy().getPluginManager().callEvent(new ContentPublisherStartEvent());
-                    }
-
-                    @Override
-                    public void onFail() {
-                        logger.error("服务启动失败，即将关闭服务器");
-                        getProxy().stop("服务启动失败，即将关闭服务器");
-                    }
-                });
+                this.serviceHelper = new ServiceHelper(getClass().getClassLoader(), watchdogListener);
             }
             serviceHelper.startup();
             if (contentPublisherCommand == null) {
